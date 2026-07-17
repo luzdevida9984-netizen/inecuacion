@@ -11,7 +11,7 @@
 <body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
     <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-2xl border border-gray-200">
         <h1 class="text-3xl font-extrabold text-blue-900 mb-2 text-center">Simulador Cuadrático</h1>
-        <p class="text-gray-600 text-center mb-6">Explora cómo $ax^2 + bx + c > 0$ cambia según los valores</p>
+        <p class="text-gray-600 text-center mb-6">Explora y resuelve: $ax^2 + bx + c > 0$</p>
 
         <div class="flex flex-col md:flex-row gap-6">
             <!-- Controles -->
@@ -28,15 +28,20 @@
                     <label class="block text-sm font-bold text-gray-700">C (<span id="valC">-4</span>)</label>
                     <input type="range" id="c" min="-10" max="10" step="1" value="-4" class="w-full control-slider">
                 </div>
+                
+                <!-- Botón de Desafío -->
+                <button id="btn-desafio" class="mt-4 w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg shadow transition-colors duration-200 flex justify-center items-center gap-2">
+                    <span>🎲</span> Generar Desafío
+                </button>
             </div>
 
             <!-- Gráfica -->
-            <div class="w-full md:w-2/3">
-                <canvas id="plot" width="400" height="300" class="border-2 border-gray-200 rounded-lg bg-white w-full"></canvas>
+            <div class="w-full md:w-2/3 flex flex-col">
+                <canvas id="plot" width="400" height="300" class="border-2 border-gray-200 rounded-lg bg-white w-full shadow-sm"></canvas>
             </div>
         </div>
 
-        <div id="resultado" class="mt-6 p-4 bg-blue-50 border-l-4 border-blue-500 rounded-r-lg font-mono text-blue-900 font-bold"></div>
+        <div id="resultado" class="mt-6 p-4 bg-blue-50 border-l-4 border-blue-500 rounded-r-lg font-mono text-blue-900 font-bold text-lg text-center"></div>
     </div>
 
     <script>
@@ -58,9 +63,10 @@
             
             // Ejes
             ctx.strokeStyle = '#e2e8f0';
+            ctx.lineWidth = 2;
             ctx.beginPath();
-            ctx.moveTo(200, 0); ctx.lineTo(200, 300);
-            ctx.moveTo(0, 150); ctx.lineTo(400, 150);
+            ctx.moveTo(200, 0); ctx.lineTo(200, 300); // Eje Y
+            ctx.moveTo(0, 150); ctx.lineTo(400, 150); // Eje X
             ctx.stroke();
 
             // Parábola
@@ -71,16 +77,45 @@
                 let y = a*(x*x) + b*x + c;
                 let screenX = (x * 15) + 200;
                 let screenY = 150 - (y * 15);
+                
                 if(x === -20) ctx.moveTo(screenX, screenY);
                 else ctx.lineTo(screenX, screenY);
             }
             ctx.stroke();
 
+            // Calcular discriminante y mostrar ecuación
             const disc = b*b - 4*a*c;
-            document.getElementById('resultado').innerHTML = `Δ (Discriminante) = ${disc.toFixed(1)} <br> ${a}x² + ${b}x + ${c} > 0`;
+            
+            // Formatear la ecuación para que se vea bonita (ej: no mostrar + -4, sino - 4)
+            let ec = `${a}x² `;
+            ec += (b >= 0 ? `+ ${b}x ` : `- ${Math.abs(b)}x `);
+            ec += (c >= 0 ? `+ ${c} ` : `- ${Math.abs(c)} `);
+            ec += `> 0`;
+
+            document.getElementById('resultado').innerHTML = `Δ (Discriminante) = ${disc.toFixed(1)} <br><span class="text-2xl mt-2 block text-blue-700">${ec}</span>`;
         }
 
+        // Función para el botón aleatorio
+        document.getElementById('btn-desafio').addEventListener('click', () => {
+            let randA = 0;
+            // Evitamos que 'a' sea 0 para que siga siendo cuadrática
+            while(randA === 0) { 
+                randA = Math.floor(Math.random() * 9) - 4; // Valores entre -4 y 4
+            }
+            const randB = Math.floor(Math.random() * 13) - 6; // Valores entre -6 y 6
+            const randC = Math.floor(Math.random() * 17) - 8; // Valores entre -8 y 8
+            
+            document.getElementById('a').value = randA;
+            document.getElementById('b').value = randB;
+            document.getElementById('c').value = randC;
+            
+            draw();
+        });
+
+        // Eventos para los deslizadores
         inputs.forEach(id => document.getElementById(id).addEventListener('input', draw));
+        
+        // Dibujar al cargar la página
         draw();
     </script>
 </body>
